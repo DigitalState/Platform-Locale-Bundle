@@ -5,16 +5,41 @@ namespace Ds\Bundle\LocaleBundle\Twig\Extension;
 use Twig_Extension;
 use Twig_SimpleFilter;
 use Symfony\Component\HttpFoundation\RequestStack;
+use Doctrine\Common\Collections\ArrayCollection;
+use Oro\Bundle\LocaleBundle\Entity\FallbackTrait;
+use Oro\Bundle\LocaleBundle\Entity\Repository\LocalizationRepository;
 
 /**
  * Class LocaleExtension
  */
 class LocaleExtension extends Twig_Extension
 {
+    use FallbackTrait;
+
     /**
      * @var \Symfony\Component\HttpFoundation\RequestStack
      */
     protected $request;
+
+    /**
+     * @var \Oro\Bundle\LocaleBundle\Entity\Localization
+     */
+    protected $localization;
+
+    /**
+     * @var \Oro\Bundle\LocaleBundle\Entity\Repository\LocalizationRepository
+     */
+    protected $localizationRepository;
+
+    /**
+     * Constructor
+     *
+     * @param \Oro\Bundle\LocaleBundle\Entity\Repository\LocalizationRepository $localizationRepository
+     */
+    public function __construct(LocalizationRepository $localizationRepository)
+    {
+        $this->localizationRepository = $localizationRepository;
+    }
 
     /**
      * @param \Symfony\Component\HttpFoundation\RequestStack $requestStack
@@ -39,28 +64,17 @@ class LocaleExtension extends Twig_Extension
     /**
      * Get localized value.
      *
+     * @param \Doctrine\Common\Collections\ArrayCollection $values
      * @return string
      */
     public function getLocalizedValue($values)
     {
-        $localizedValue = null;
-        $locale = $this->request->getLocale();
-
-        foreach ($values as $value) {
-            if ($value->getLocalization() && $value->getLocalization()->getLanguageCode() == $locale) {
-                $localizedValue = $value->getText();
-            }
+        if (!$this->localization) {
+            $locale = $this->request->getLocale();
+            $this->localization = $this->localizationRepository->findOneBy([ 'language_code' => $locale ]);
         }
 
-        if (null === $localizedValue) {
-            foreach ($values as $value) {
-                if (null === $value->getLocalization()) {
-                    $localizedValue = $value->getText();
-                }
-            }
-        }
-
-        return $localizedValue;
+        return $this->getLocalizedFallbackValue($values, $this->localization)->getText();
     }
 
     public function getName()
