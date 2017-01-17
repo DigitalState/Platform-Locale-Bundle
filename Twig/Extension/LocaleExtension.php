@@ -8,6 +8,7 @@ use Symfony\Component\HttpFoundation\RequestStack;
 use Doctrine\Common\Collections\ArrayCollection;
 use Oro\Bundle\LocaleBundle\Entity\FallbackTrait;
 use Oro\Bundle\LocaleBundle\Entity\Repository\LocalizationRepository;
+use RuntimeException;
 
 /**
  * Class LocaleExtension
@@ -22,14 +23,14 @@ class LocaleExtension extends Twig_Extension
     protected $request;
 
     /**
-     * @var \Oro\Bundle\LocaleBundle\Entity\Localization
-     */
-    protected $localization;
-
-    /**
      * @var \Oro\Bundle\LocaleBundle\Entity\Repository\LocalizationRepository
      */
     protected $localizationRepository;
+
+    /**
+     * @var \Oro\Bundle\LocaleBundle\Entity\Localization
+     */
+    protected $localization;
 
     /**
      * Constructor
@@ -66,12 +67,19 @@ class LocaleExtension extends Twig_Extension
      *
      * @param \Doctrine\Common\Collections\ArrayCollection $values
      * @return string
+     * @throws \RuntimeException
      */
     public function getLocalizedValue($values)
     {
         if (!$this->localization) {
             $locale = $this->request->getLocale();
-            $this->localization = $this->localizationRepository->findOneBy([ 'language_code' => $locale ]);
+            $localization = $this->localizationRepository->findOneBy([ 'formattingCode' => $locale ]);
+
+            if (!$localization) {
+                throw new RuntimeException('Localization does not exist.');
+            }
+
+            $this->localization = $localization;
         }
 
         return $this->getLocalizedFallbackValue($values, $this->localization)->getText();
