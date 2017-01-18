@@ -2,6 +2,9 @@
 
 The Locale bundle extends the OroLocaleBundle and provides additional core locale functionality. 
 
+[![Code Climate](https://codeclimate.com/github/DigitalState/Platform-Locale-Bundle/badges/gpa.svg)](https://codeclimate.com/github/DigitalState/Platform-Locale-Bundle)
+[![Test Coverage](https://codeclimate.com/github/DigitalState/Platform-Locale-Bundle/badges/coverage.svg)](https://codeclimate.com/github/DigitalState/Platform-Locale-Bundle/coverage)
+
 ## Table of Contents
 
 - [Twig Extensions](#migration-extensions)
