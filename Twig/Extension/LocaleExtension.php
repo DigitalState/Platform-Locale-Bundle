@@ -82,7 +82,9 @@ class LocaleExtension extends Twig_Extension
             $this->localization = $localization;
         }
 
-        return $this->getLocalizedFallbackValue($values, $this->localization)->getText();
+        $value = $this->getLocalizedFallbackValue($values, $this->localization);
+
+        return null !== $value->getString() ? $value->getString() : $value->getText();
     }
 
     public function getName()
